@@ -3,7 +3,7 @@ export function isStateful(obj: any): obj is Stateful {
 }
 
 export interface Stateful {
-	get isEnabled(): boolean;
+	readonly isEnabled: boolean;
 
 	enable(): Promise<void>;
 
