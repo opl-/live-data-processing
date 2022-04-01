@@ -102,6 +102,9 @@ export class AmqpTap extends Tap implements Stateful {
 			await channel.bindQueue(this.opts.queueName, bind.exchange ?? this.opts.exchange, bind.pattern);
 		}));
 
+		// Limit to processing one message at a time
+		await channel.prefetch(1);
+
 		await channel.consume(this.opts.queueName, async (msg) => {
 			if (!msg) return;
 
