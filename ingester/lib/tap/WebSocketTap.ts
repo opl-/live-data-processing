@@ -29,6 +29,11 @@ export interface WebSocketTapOpts extends TapOptions {
 	 * `false` by default.
 	 */
 	silenceKill?: false | number;
+
+	/**
+	 * Options passed to the WebSocket.
+	 */
+	webSocketOptions?: WebSocket.ClientOptions | (() => Promise<WebSocket.ClientOptions>);
 }
 
 export class WebSocketTap extends Tap implements Stateful {
@@ -94,12 +99,30 @@ export class WebSocketTap extends Tap implements Stateful {
 		}
 	}
 
+	async resolveOptions(): Promise<WebSocket.ClientOptions | undefined> {
+		if (typeof(this.opts.webSocketOptions) !== 'function') return this.opts.webSocketOptions;
+
+		let delay = 100;
+
+		while (true) {
+			try {
+				const opts = await this.opts.webSocketOptions();
+
+				return opts;
+			} catch (ex) {
+				console.log('failed to resolve websocket options, waiting');
+				await wait(delay);
+				delay = Math.min(10000, delay * 2);
+			}
+		}
+	}
+
 	async connect(): Promise<void> {
 		this.disconnect();
 
 		const url = await this.resolveURL();
 
-		this.socket = new WebSocket(url);
+		this.socket = new WebSocket(url, await this.resolveOptions());
 
 		this.socket.onopen = this.onOpen.bind(this);
 		this.socket.onclose = this.onClose.bind(this);
