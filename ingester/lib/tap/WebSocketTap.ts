@@ -34,6 +34,11 @@ export interface WebSocketTapOpts extends TapOptions {
 	 * Options passed to the WebSocket.
 	 */
 	webSocketOptions?: WebSocket.ClientOptions | (() => Promise<WebSocket.ClientOptions>);
+
+	/**
+	 * Called immediately when the websocket is opened.
+	 */
+	onOpen?: (ws: WebSocket) => void;
 }
 
 export class WebSocketTap extends Tap implements Stateful {
@@ -163,6 +168,10 @@ export class WebSocketTap extends Tap implements Stateful {
 
 		if (this.opts.silenceKill) {
 			this.silenceInterval = setInterval(this.checkSilence.bind(this), this.opts.silenceKill);
+		}
+
+		if (this.socket && this.opts.onOpen) {
+			this.opts.onOpen(this.socket);
 		}
 	}
 
