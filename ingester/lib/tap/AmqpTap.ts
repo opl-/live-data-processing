@@ -96,7 +96,6 @@ export class AmqpTap extends Tap implements Stateful {
 
 		await channel.assertQueue(this.opts.queueName, {
 			durable: true,
-			expires: 24 * 60 * 60000,
 		});
 
 		await Promise.all(this.opts.queueBinds.map(async (bind) => {
