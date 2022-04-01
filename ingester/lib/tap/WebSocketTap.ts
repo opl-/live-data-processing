@@ -76,7 +76,7 @@ export class WebSocketTap extends Tap implements Stateful {
 	async resolveURL(): Promise<string> {
 		if (typeof(this.opts.url) === 'string') return this.opts.url;
 
-		let delay = 50;
+		let delay = 100;
 
 		while (true) {
 			try {
