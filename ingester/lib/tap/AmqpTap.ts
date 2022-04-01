@@ -4,15 +4,6 @@ import {Data, NewData} from '../Ingester';
 import {Stateful} from '../Stateful';
 import {Tap, TapOptions} from '../Tap';
 
-export interface QueueBind {
-	/**
-	 * Exchange from which the messages will come. Defaults to the value of `opts.exchange`.
-	 */
-	exchange?: string;
-
-	pattern: string;
-}
-
 export interface AmqpTapOpts extends TapOptions {
 	hostname?: string;
 
@@ -29,21 +20,9 @@ export interface AmqpTapOpts extends TapOptions {
 	vhost?: string;
 
 	/**
-	 * Exchange which will be automatically asserted.
+	 * Called during enable to create the exchange, queue, and its binds. The returned queue name will be consumed from and broadcast by this tap.
 	 */
-	exchange: string;
-
-	/**
-	 * Name of the queue. Used to create a durable queue which will survive restarts.
-	 */
-	queueName: string;
-
-	/**
-	 * Array of exchanges and patterns to bind the queue to.
-	 *
-	 * All messages received in this queue will be broadcast by this tap.
-	 */
-	queueBinds: QueueBind[];
+	createQueue: (channel: amqp.Channel) => Promise<string>;
 
 	/**
 	 * If provided, the incoming data will be passed through this function.
@@ -62,12 +41,10 @@ export class AmqpTap extends Tap implements Stateful {
 	private connection: amqp.Connection | null = null;
 	private channel: amqp.Channel | null = null;
 
+	private queueName: string;
+
 	constructor(opts: AmqpTapOpts) {
 		super(opts);
-
-		if (typeof(opts.exchange) !== 'string') throw new Error('exchange is required');
-		if (typeof(opts.queueName) !== 'string') throw new Error('queueName is required');
-		if (!Array.isArray(opts.queueBinds)) throw new Error('queueBinds is required');
 
 		this.opts = opts;
 	}
@@ -89,23 +66,9 @@ export class AmqpTap extends Tap implements Stateful {
 
 		const channel = this.channel = await this.connection.createChannel();
 
-		await channel.assertExchange(this.opts.exchange, 'topic', {
-			durable: true,
-			autoDelete: false,
-		});
+		this.queueName = await this.opts.createQueue(channel);
 
-		await channel.assertQueue(this.opts.queueName, {
-			durable: true,
-		});
-
-		await Promise.all(this.opts.queueBinds.map(async (bind) => {
-			await channel.bindQueue(this.opts.queueName, bind.exchange ?? this.opts.exchange, bind.pattern);
-		}));
-
-		// Limit to processing one message at a time
-		await channel.prefetch(1);
-
-		await channel.consume(this.opts.queueName, async (msg) => {
+		await channel.consume(this.queueName, async (msg) => {
 			if (!msg) return;
 
 			const data: Data = {

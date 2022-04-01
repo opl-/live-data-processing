@@ -7,5 +7,5 @@ export {AmqpSink, AmqpSinkOpts} from './sink/AmqpSink';
 export {FileSink, FileSinkOpts} from './sink/FileSink';
 export {PostgresSink, PostgresSinkOpts} from './sink/PostgresSink';
 
-export {AmqpTap, AmqpTapOpts, QueueBind} from './tap/AmqpTap';
+export {AmqpTap, AmqpTapOpts} from './tap/AmqpTap';
 export {WebSocketTap, WebSocketTapOpts} from './tap/WebSocketTap';
