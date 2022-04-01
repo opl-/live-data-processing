@@ -105,8 +105,6 @@ export class AmqpTap extends Tap implements Stateful {
 		await channel.consume(this.opts.queueName, async (msg) => {
 			if (!msg) return;
 
-			console.log(JSON.stringify(msg));
-
 			const data: Data = {
 				author: (msg.properties.headers.author as string | undefined) ?? this.authorName,
 				source: (msg.properties.headers.source as string | undefined) ?? this.sourceName,
