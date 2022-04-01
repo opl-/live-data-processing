@@ -44,6 +44,8 @@ export class WebSocketTap extends Tap implements Stateful {
 	private silenceInterval: NodeJS.Timer | null = null;
 
 	constructor(opts: WebSocketTapOpts) {
+		super(opts);
+
 		if (opts.url === undefined) throw new Error('url is required');
 
 		if (opts.pingKeepAlive === undefined) {
@@ -55,8 +57,6 @@ export class WebSocketTap extends Tap implements Stateful {
 		if (opts.silenceKill !== false && opts.silenceKill !== undefined && (typeof(opts.silenceKill) !== 'number' || opts.silenceKill <= 0)) {
 			throw new Error('silenceKill must be false or a number greater than 0');
 		}
-
-		super(opts);
 
 		this.opts = opts;
 	}
