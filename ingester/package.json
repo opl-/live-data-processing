@@ -2,7 +2,7 @@
   "name": "ingester",
   "version": "0.1.0",
   "description": "Manages connections with external data sources and inserts them into the database.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node ./lib/ingester.ts",
     "build": "tsc",
