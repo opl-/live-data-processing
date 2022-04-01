@@ -11,6 +11,7 @@
   "author": "opl",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@types/amqplib": "^0.8.2",
     "@types/pg": "^7.14.11",
     "@types/ws": "^7.4.1",
     "ts-node": "^9.1.1",
@@ -20,6 +21,7 @@
     "ws": "^7.4.4"
   },
   "optionalDependencies": {
+    "amqplib": "^0.8.0",
     "pg": "^8.5.1"
   }
 }
