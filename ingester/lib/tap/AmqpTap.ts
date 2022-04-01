@@ -1,6 +1,6 @@
 import amqp from 'amqplib';
 
-import {Data} from '../Ingester';
+import {Data, NewData} from '../Ingester';
 import {Stateful} from '../Stateful';
 import {Tap, TapOptions} from '../Tap';
 
@@ -44,6 +44,11 @@ export interface AmqpTapOpts extends TapOptions {
 	 * All messages received in this queue will be broadcast by this tap.
 	 */
 	queueBinds: QueueBind[];
+
+	/**
+	 * If provided, the incoming data will be passed through this function and only acknowledged if the promise isn't rejeceted.
+	 */
+	transform?: (data: Data) => Promise<NewData>;
 }
 
 /**
@@ -96,19 +101,33 @@ export class AmqpTap extends Tap implements Stateful {
 			await channel.bindQueue(this.opts.queueName, bind.exchange ?? this.opts.exchange, bind.pattern);
 		}));
 
-		await channel.consume(this.opts.queueName, (msg) => {
+		await channel.consume(this.opts.queueName, async (msg) => {
 			if (!msg) return;
 
 			console.log(JSON.stringify(msg));
 
-			this.giveExact({
+			const data: Data = {
 				author: (msg.properties.headers.author as string | undefined) ?? this.authorName,
 				source: (msg.properties.headers.source as string | undefined) ?? this.sourceName,
 				content: msg.content,
 				timestamp: msg.properties.timestamp,
-			});
+			};
 
-			channel.ack(msg);
+			if (this.opts.transform) {
+				try {
+					const newData = await this.opts.transform(data);
+					this.give(newData);
+
+					channel.ack(msg);
+				} catch (ex) {
+					console.error('AmqpTap transform error:', ex);
+					channel.nack(msg);
+				}
+			} else {
+				this.giveExact(data);
+
+				channel.ack(msg);
+			}
 		}, {
 			noAck: false,
 		});
