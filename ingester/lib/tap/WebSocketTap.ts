@@ -179,8 +179,6 @@ export class WebSocketTap extends Tap implements Stateful {
 		if (buf === null) return void console.warn(`WebSocket received data it could not handle!`);
 
 		this.give({
-			source: this.sourceName,
-			author: this.authorName,
 			timestamp: now,
 			content: buf,
 		});
