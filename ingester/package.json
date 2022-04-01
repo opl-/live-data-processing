@@ -1,0 +1,25 @@
+{
+  "name": "ingester",
+  "version": "0.1.0",
+  "description": "Manages connections with external data sources and inserts them into the database.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node ./lib/ingester.ts",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "opl",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "@types/pg": "^7.14.11",
+    "@types/ws": "^7.4.1",
+    "ts-node": "^9.1.1",
+    "typescript": "~4.2.3"
+  },
+  "dependencies": {
+    "ws": "^7.4.4"
+  },
+  "optionalDependencies": {
+    "pg": "^8.5.1"
+  }
+}
