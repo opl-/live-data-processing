@@ -46,9 +46,11 @@ export interface AmqpTapOpts extends TapOptions {
 	queueBinds: QueueBind[];
 
 	/**
-	 * If provided, the incoming data will be passed through this function and only acknowledged if the promise isn't rejeceted.
+	 * If provided, the incoming data will be passed through this function.
+	 *
+	 * If `null` is returned, the data will be acknowledged. If the promise is rejected, the data won't be acknowledged and should get requeued.
 	 */
-	transform?: (data: Data) => Promise<NewData>;
+	transform?: (data: Data) => Promise<NewData | null>;
 }
 
 /**
@@ -116,7 +118,11 @@ export class AmqpTap extends Tap implements Stateful {
 			if (this.opts.transform) {
 				try {
 					const newData = await this.opts.transform(data);
-					this.give(newData);
+
+					// null means ignore message
+					if (newData !== null) {
+						this.give(newData);
+					}
 
 					channel.ack(msg);
 				} catch (ex) {
