@@ -1,7 +1,7 @@
 export {Data, getGlobalAuthor, NewData, setGlobalAuthor} from './Ingester';
 export {Pipe} from './Pipe';
 export {Sink} from './Sink';
-export {Tap} from './Tap';
+export {Tap, TapOptions} from './Tap';
 
 export {AmqpSink, AmqpSinkOpts} from './sink/AmqpSink';
 export {FileSink, FileSinkOpts} from './sink/FileSink';
